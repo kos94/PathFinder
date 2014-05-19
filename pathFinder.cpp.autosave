@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <string.h>
+
+double dt;
+
+class AxisWay {
+private:
+	double a0, a, vPrev, s;
+public: 
+	AxisWay();
+	void setDefaultA(double aDef) { a0 = aDef; }
+	double getNextCoord(double a);
+};
+
+AxisWay::AxisWay() {
+	a0 = a = vPrev = s = 0;
+}
+
+double AxisWay::getNextCoord(double ai) {
+	a = ai - a0;
+	s += vPrev * dt  + a * dt * dt / 2;
+	vPrev = a * dt;
+	return s;
+}
+
+class PathFinder {
+    double* a;
+    
+};
+
+/*void writeDoublesToFile(FILE* f, double d) {
+	char s[50];
+	sprintf(s, "%lf\n", d);
+	replaceDots(s);
+	fprintf(f, "%s", s);
+}
+
+void writeDoublesToFile(FILE* f, double d1, double d2, double d3) {
+	char s[50];
+	sprintf(s, "%lf %lf %lf\n", d1, d2, d3);
+	replaceDots(s);
+	fprintf(f, "%s", s);
+}*/
+
+void countData() {
+	FILE* fr = fopen("data.txt", "rt");
+	double ax, ay, az, ax0, ay0, az0;
+	double x, y, z, tPrev, t;
+	AxisWay wx, wy, wz;
+
+	ax0 = ay0 = az0 = 0;
+	for(int i=0; i<5; i++) {
+		fscanf(fr, "%lf %lf %lf %lf", &ax, &ay, &az, &tPrev);
+		ax0 += ax;
+		ay0 += ay;
+		az0 += az;
+	}
+	ax0 /= 5; ay0 /= 5; az0 /= 5;
+
+	while( fscanf(fr, "%lf %lf %lf %lf", 
+			&ax, &ay, &az, &t) != EOF ) {
+		dt = (t - tPrev)/1000;
+		x = wx.getNextCoord( ax );
+		y = wy.getNextCoord( ay );
+		z = wz.getNextCoord( az );
+
+		writeDoublesToFile(fw, x, y, z);
+		writeDoublesToFile(fx, x);
+		writeDoublesToFile(fy, y);
+		writeDoublesToFile(fz, z);
+		
+		tPrev = t;
+	}
+
+	fclose(fr);
+}
