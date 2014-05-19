@@ -11,7 +11,15 @@ void Vector3D::rotate( double x11,double x12,double x13,
     z = ( x * x31 + y * x32 + z * x33 );
 }
 
-PathCalculator::PathCalculator(char* accelFilePath) {
+PathCalculator::PathCalculator(char* accelFilePath,
+                                   bool ios,
+                                   int framesNumbers,
+                                   double lowPass,
+                                   bool gyro) {
+    NUM_CALIBRATION_FRAMES = framesNumbers;
+    IOS = ios;
+    GYRO = gyro;
+    LOW_PASS_VALUE = lowPass;
     strcpy(filePath, accelFilePath);
     readData();
     calcData();
@@ -35,10 +43,13 @@ void PathCalculator::readData() {
     ax0 = ay0 = az0 = 0.0;
     if( NUM_CALIBRATION_FRAMES ) {
         for(int i=0; i<NUM_CALIBRATION_FRAMES; i++) {
-//            fscanf(fr, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",
-//                   &a1.x, &a1.y, &a1.z, &x11, &x12, &x13, &x21, &x22, &x23, &x31, &x32, &x33, &tPrev);
-            fscanf(fr, "%lf %lf %lf %lf ", &a1.x, &a1.y, &a1.z, &tPrev);
-//            a1.rotate(x11, x12, x13, x21, x22, x23, x31, x32, x33);
+            if(IOS)
+            fscanf(fr, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",
+                   &a1.x, &a1.y, &a1.z, &x11, &x12, &x13, &x21, &x22, &x23, &x31, &x32, &x33, &tPrev);
+            else
+                fscanf(fr, "%lf %lf %lf %lf ", &a1.x, &a1.y, &a1.z, &tPrev);
+            if(GYRO)
+                a1.rotate(x11, x12, x13, x21, x22, x23, x31, x32, x33);
             ax0 += a1.x;
             ay0 += a1.y;
             az0 += a1.z;
@@ -53,23 +64,32 @@ void PathCalculator::readData() {
     wz = new AxisWay( az0, tPrev );
 
     int counter = 0;
-    while( fscanf(fr, "%lf %lf %lf %lf ", &a1.x, &a1.y, &a1.z, &t) != EOF ) {
-//    while( fscanf(fr, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",
-//                  &a1.x, &a1.y, &a1.z, &x11, &x12, &x13, &x21, &x22, &x23, &x31, &x32, &x33, &t) != EOF ) {
-//        qDebug("%lf %lf %lf %lf ", a1.x, a1.y, a1.z, t);
+    int temp;
+    if(IOS)
+        temp = fscanf(fr, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",
+                      &a1.x, &a1.y, &a1.z, &x11, &x12, &x13, &x21, &x22, &x23, &x31, &x32, &x33, &t);
+    else
+        temp = fscanf(fr, "%lf %lf %lf %lf ", &a1.x, &a1.y, &a1.z, &t);
+    while( temp != EOF ) {
+
         wx->addNextAcceleration(a1.x, t);
         wy->addNextAcceleration(a1.y, t);
         wz->addNextAcceleration(a1.z, t);
         counter++;
         if( counter > MAX_REC_NUM ) break;
+        if(IOS)
+            temp = fscanf(fr, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",
+                          &a1.x, &a1.y, &a1.z, &x11, &x12, &x13, &x21, &x22, &x23, &x31, &x32, &x33, &t);
+        else
+            temp = fscanf(fr, "%lf %lf %lf %lf ", &a1.x, &a1.y, &a1.z, &t);
     }
     fclose(fr);
 }
 
 void PathCalculator::calcData() {
-    wx->calcCoords();
-    wy->calcCoords();
-    wz->calcCoords();
+    wx->calcCoords(IOS,LOW_PASS_VALUE);
+    wy->calcCoords(IOS,LOW_PASS_VALUE);
+    wz->calcCoords(IOS,LOW_PASS_VALUE);
 }
 
 Vector3D PathCalculator::getPoint(int index) {

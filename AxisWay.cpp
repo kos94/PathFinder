@@ -15,7 +15,7 @@ void AxisWay::addNextAcceleration(double ai, double ti) {
     accelerations.push_back( ar );
 }
 
-void AxisWay::calcCoords() {
+void AxisWay::calcCoords(bool IOS,double ACCELERATION_NOISE) {
     double ai, v, s, t, ti, dt;
     int recNum = accelerations.size();
 
@@ -26,7 +26,9 @@ void AxisWay::calcCoords() {
         ai = accelerations.at(i).a - a0;
         if( fabs(ai) < ACCELERATION_NOISE ) { ai = 0.0; }
 
-        dt = (ti - t) / 1000;
+        dt = (ti - t);
+        if( !IOS )
+            dt /= 1000;
         s += v * dt  + ai * dt * dt / 2;
         coords.push_back( s );
         v += ai * dt;

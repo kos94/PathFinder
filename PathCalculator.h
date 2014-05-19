@@ -7,14 +7,21 @@
 class PathCalculator {
 private:
     char filePath[256];
-    static const int NUM_CALIBRATION_FRAMES = 3;
+    int NUM_CALIBRATION_FRAMES;
+    double LOW_PASS_VALUE;
+    bool GYRO;
+    bool IOS;
     static const int ROW_LENGTH = 4;
     static const int MAX_REC_NUM = 1000;
     int recNum;
     AxisWay *wx, *wy, *wz;
 
 public:
-    PathCalculator(char* accelFilePath);
+    PathCalculator(char* accelFilePath,
+                   bool ios,
+                   int framesNumbers,
+                   double lowPass,
+                   bool gyro);
     ~PathCalculator();
     void readData();
     void calcData();

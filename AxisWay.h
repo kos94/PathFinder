@@ -22,7 +22,6 @@ struct acceleratorRecord {
 
 class AxisWay {
 private:
-    static const float ACCELERATION_NOISE = 0.0;
     vector < acceleratorRecord > accelerations;
     vector < double > coords;
     double a0, a, v, s, t0;
@@ -31,7 +30,7 @@ public:
     AxisWay(double a0, double t0);
     void setDefaultA(double aDef) { a0 = aDef; }
     void addNextAcceleration(double ai, double ti);
-    void calcCoords();
+    void calcCoords(bool IOS,double ACCELERATION_NOISE);
     void printPathCoords();
     double getCoord(int index) { return coords.at(index); }
     double getCoordsNum() { return coords.size(); }
