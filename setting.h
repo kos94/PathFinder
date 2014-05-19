@@ -7,6 +7,17 @@
 #include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <QCheckBox>
+#include <QMessageBox>
+#include <QGridLayout>
+#include <QLabel>
+#include <QFrame>
+#include <QFileDialog>
+#include <QApplication>
+
+#include "scene3D.h"
+#include "PathCalculator.h"
+
+#include "server.h"
 
 class Setting : public QWidget
 {
@@ -17,16 +28,18 @@ public:
     QCheckBox *ios;
     QCheckBox *gyro;
     QSpinBox *framesCouns;
-   // QSpinBox *linFrame;
+    // QSpinBox *linFrame;
     QDoubleSpinBox *lowPass;
-   // QPushButton *browse;
+    // QPushButton *browse;
     QPushButton *startServer;
+    Server *server;
 signals:
 
 public slots:
-    void getFilePath();
-    void hasGiro();
-    void start();
+    void getFilePath();//Open filebrowser
+    void hasGyro();//Show checkbox if file has gyrodata
+    void start();//Start pacthCalculator and show graph
+    void startStopServer();
 };
 
 #endif // SETTING_H

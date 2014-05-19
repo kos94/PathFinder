@@ -1,14 +1,8 @@
 #include "setting.h"
-#include <QGridLayout>
-#include <QLabel>
-#include <QFrame>
-#include <QFileDialog>
-#include <QApplication>
-#include "scene3D.h"
-#include "PathCalculator.h"
 
 #define YES true
 #define NO false
+#define StartServerString "Start Server"
 
 Setting::Setting(QWidget *parent) :
     QWidget(parent)
@@ -28,9 +22,9 @@ Setting::Setting(QWidget *parent) :
     layout->addWidget(browse,line,1,1,1);
     line++;
 
-    browse=new QPushButton("Start Server");
-    browse->setEnabled(NO);
-    layout->addWidget(browse,line,0,1,2);
+    startServer=new QPushButton(StartServerString);
+    connect(startServer,SIGNAL(clicked()),SLOT(startStopServer()));
+    layout->addWidget(startServer,line,0,1,2);
     line++;
 
     QFrame* separator = new QFrame();
@@ -59,10 +53,10 @@ Setting::Setting(QWidget *parent) :
     layout->addWidget(linFrame,line,1,1,1);
     line++;
 
-    layout->addWidget(new QLabel("Giro"),line,0,1,1);
+    layout->addWidget(new QLabel("Gyro"),line,0,1,1);
     gyro=new QCheckBox();
     gyro->setEnabled(NO);
-    connect(ios,SIGNAL(stateChanged(int)),SLOT(hasGiro()));
+    connect(ios,SIGNAL(stateChanged(int)),SLOT(hasGyro()));
     layout->addWidget(gyro,line,1,1,1);
     line++;
 
@@ -70,6 +64,8 @@ Setting::Setting(QWidget *parent) :
     connect(start,SIGNAL(clicked()),SLOT(start()));
     layout->addWidget(start,line,0,1,2);
     line++;
+
+    server=new Server((QObject *)this);
 
     setLayout(layout);
     setWindowTitle("Settings");
@@ -86,7 +82,6 @@ void Setting::getFilePath(){
     {
         FILE* fr = fopen(fileAdress->text().toUtf8().data(), "rt");
         char t[500];
-       // fscanf(fr, "%s", &t);
         fgets(t,sizeof(t),fr);
         int c=0;
         for(int i=0;i<strlen(t);i++)
@@ -100,7 +95,7 @@ void Setting::getFilePath(){
         fclose(fr);
     }
 }
-void Setting::hasGiro(){
+void Setting::hasGyro(){
     if(ios->isChecked())
     {
         gyro->setEnabled(YES);
@@ -127,5 +122,27 @@ void Setting::start(){
     else
     {
         fileAdress->setStyleSheet("QLineEdit{background: red;}");
+    }
+}
+void Setting::startStopServer(){
+    if(!server->isStarted()){
+    QString str=server->start();
+    if(str=="error")
+    {
+        startServer->setText(StartServerString);
+        QMessageBox::warning(this,"Error","Error: cant start server.",QMessageBox::Ok);
+    }
+    else
+        startServer->setText("Stop "+str);
+    }
+    else
+    {
+        if(server->stop())
+        {
+            startServer->setText(StartServerString);
+            fileAdress->setText("input_temp");
+        }
+        else
+            QMessageBox::warning(this,"Error","Error: cant stop server.",QMessageBox::Ok);
     }
 }
