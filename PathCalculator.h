@@ -2,19 +2,21 @@
 #define PATHCALCULATOR_H
 
 #include <QObject>
-#include "AxisWay.h"
+#include "vector3d.h"
 
 class PathCalculator {
 private:
     char filePath[256];
     int NUM_CALIBRATION_FRAMES;
-    double LOW_PASS_VALUE;
+    double LOW_BORDER_VALUE;
     bool GYRO;
     bool IOS;
     static const int ROW_LENGTH = 4;
     static const int MAX_REC_NUM = 1000;
     int recNum;
-    AxisWay *wx, *wy, *wz;
+    AcceleratorRecord initRecord;
+    vector < AcceleratorRecord > records;
+    vector < Vector3D > points;
 
 public:
     PathCalculator(char* accelFilePath,
@@ -23,10 +25,14 @@ public:
                    double lowPass,
                    bool gyro);
     ~PathCalculator();
-    void readData();
-    void calcData();
-    inline int getRecNum() { return wx->getCoordsNum(); }
+    int getRecNum() { return points.size(); }
     Vector3D getPoint(int index);
+
+protected:
+    void readData();
+    void readInitialRecord(FILE* f);
+    void changeData();
+    void calcData();
 };
 
 #endif // PATHCALCULATOR_H

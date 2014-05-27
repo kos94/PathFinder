@@ -30,6 +30,7 @@ Scene3D::Scene3D(PathCalculator* pc, QWidget* parent) : QGLWidget(parent)
    pathCalculator = pc;
    pNum = pathCalculator->getRecNum();
    Vector3D lastP = pathCalculator->getPoint(pNum-1);
+
    double anB = atan(lastP.x / lastP.y);
    double arg = lastP.z / (cos(anB) * lastP.y + sin(anB) * lastP.x);
    double anA = atan( arg );
@@ -452,7 +453,7 @@ void Scene3D::drawPoints()
 
 void Scene3D::drawTheWay()
 {
-    Vector3D prevPoint={0};
+    Vector3D prevPoint;
     const double scale=10.0;
 
     for (int i=0; i<pNum; i++)

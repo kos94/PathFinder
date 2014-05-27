@@ -95,6 +95,7 @@ void Setting::getFilePath(){
         fclose(fr);
     }
 }
+
 void Setting::hasGyro(){
     if(ios->isChecked())
     {
@@ -124,6 +125,7 @@ void Setting::start(){
         fileAdress->setStyleSheet("QLineEdit{background: red;}");
     }
 }
+
 void Setting::startStopServer(){
     if(!server->isStarted()){
     QString str=server->start();

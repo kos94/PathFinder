@@ -14,9 +14,9 @@ TEMPLATE = app
 SOURCES += main.cpp\
     scene3D.cpp \
     pathCalculator.cpp \
-    AxisWay.cpp \
     setting.cpp \
-    server.cpp
+    server.cpp \
+    vector3d.cpp
 
 INCLUDEPATH += $$PWD/../../../usr/local/include
 DEPENDPATH += $$PWD/../../../usr/local/include
@@ -25,9 +25,9 @@ INCLUDEPATH += $$PWD/../../../../../usr/include
 DEPENDPATH += $$PWD/../../../../../usr/include
 HEADERS  += \
     scene3D.h \
-    AxisWay.h \
     PathCalculator.h \
     setting.h \
-    server.h
+    server.h \
+    vector3d.h
 
 FORMS    +=

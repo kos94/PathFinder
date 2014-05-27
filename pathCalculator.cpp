@@ -3,13 +3,7 @@
 #include <assert.h>
 #include "PathCalculator.h"
 
-void Vector3D::rotate( double x11,double x12,double x13,
-        double x21,double x22,double x23,
-        double x31,double x32,double x33) {
-    x = ( x * x11 + y * x12 + z * x13 );
-    y = ( x * x21 + y * x22 + z * x23 );
-    z = ( x * x31 + y * x32 + z * x33 );
-}
+
 
 PathCalculator::PathCalculator(char* accelFilePath,
                                    bool ios,
@@ -19,83 +13,140 @@ PathCalculator::PathCalculator(char* accelFilePath,
     NUM_CALIBRATION_FRAMES = framesNumbers;
     IOS = ios;
     GYRO = gyro;
-    LOW_PASS_VALUE = lowPass;
+    LOW_BORDER_VALUE = lowPass;
     strcpy(filePath, accelFilePath);
     readData();
+    //changeData();
     calcData();
 }
 
 PathCalculator::~PathCalculator() {
-    delete wx;
-    delete wy;
-    delete wz;
+    //DO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 void PathCalculator::readData() {
-    Vector3D a1;
-    double ax0, ay0, az0;
-    double x11, x12, x13, x21, x22, x23, x31, x32, x33;
-    double tPrev, t;
+    AcceleratorRecord rec;
+    Matrix3x3 m;
 
+    qDebug(">%s<", filePath);
     FILE* fr = fopen(filePath, "rt");
     assert( fr != NULL );
     qDebug("OPENED");
-    ax0 = ay0 = az0 = 0.0;
-    if( NUM_CALIBRATION_FRAMES ) {
-        for(int i=0; i<NUM_CALIBRATION_FRAMES; i++) {
-            if(IOS)
-            fscanf(fr, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",
-                   &a1.x, &a1.y, &a1.z, &x11, &x12, &x13, &x21, &x22, &x23, &x31, &x32, &x33, &tPrev);
-            else
-                fscanf(fr, "%lf %lf %lf %lf ", &a1.x, &a1.y, &a1.z, &tPrev);
-            if(GYRO)
-                a1.rotate(x11, x12, x13, x21, x22, x23, x31, x32, x33);
-            ax0 += a1.x;
-            ay0 += a1.y;
-            az0 += a1.z;
-        }
-        ax0 /= NUM_CALIBRATION_FRAMES;
-        ay0 /= NUM_CALIBRATION_FRAMES;
-        az0 /= NUM_CALIBRATION_FRAMES;
-    }
 
-    wx = new AxisWay( ax0, tPrev );
-    wy = new AxisWay( ay0, tPrev );
-    wz = new AxisWay( az0, tPrev );
+    readInitialRecord( fr );
 
     int counter = 0;
     int temp;
-    if(IOS)
-        temp = fscanf(fr, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",
-                      &a1.x, &a1.y, &a1.z, &x11, &x12, &x13, &x21, &x22, &x23, &x31, &x32, &x33, &t);
-    else
-        temp = fscanf(fr, "%lf %lf %lf %lf ", &a1.x, &a1.y, &a1.z, &t);
-    while( temp != EOF ) {
 
-        wx->addNextAcceleration(a1.x, t);
-        wy->addNextAcceleration(a1.y, t);
-        wz->addNextAcceleration(a1.z, t);
-        counter++;
-        if( counter > MAX_REC_NUM ) break;
-        if(IOS)
+    while( counter <= MAX_REC_NUM ) {
+        if(IOS) {
             temp = fscanf(fr, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",
-                          &a1.x, &a1.y, &a1.z, &x11, &x12, &x13, &x21, &x22, &x23, &x31, &x32, &x33, &t);
-        else
-            temp = fscanf(fr, "%lf %lf %lf %lf ", &a1.x, &a1.y, &a1.z, &t);
+                   &rec.x, &rec.y, &rec.z, &m.x11, &m.x12, &m.x13,
+                   &m.x21, &m.x22, &m.x23, &m.x31, &m.x32, &m.x33, &rec.t);
+        } else {
+            temp = fscanf(fr, "%lf %lf %lf %lf ", &rec.x, &rec.y, &rec.z, &rec.t);
+        }
+        if( temp == EOF ) { break; }
+
+        records.push_back( rec );
+        rec.print();
+        counter++;
     }
-    fclose(fr);
+
+    fclose( fr );
+}
+
+void PathCalculator::readInitialRecord(FILE* f) {
+    AcceleratorRecord rec;
+    Matrix3x3 m;
+    AcceleratorRecord initialRecord;
+    double tPrev;
+
+    if( !NUM_CALIBRATION_FRAMES ) return;
+    for(int i=0; i<NUM_CALIBRATION_FRAMES; i++) {
+        if(IOS) {
+            fscanf(f, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",
+                   &rec.x, &rec.y, &rec.z, &m.x11, &m.x12, &m.x13,
+                   &m.x21, &m.x22, &m.x23, &m.x31, &m.x32, &m.x33, &tPrev);
+        } else {
+            fscanf(f, "%lf %lf %lf %lf ", &rec.x, &rec.y, &rec.z, &tPrev);
+        }
+
+        if(GYRO) {
+            rec.rotate( m );
+        }
+
+        qDebug("> %lf %lf %lf %lf ", rec.x, rec.y, rec.z, tPrev);
+        initialRecord.x += rec.x;
+        initialRecord.y += rec.y;
+        initialRecord.z += rec.z;
+    }
+
+    initialRecord.x /= NUM_CALIBRATION_FRAMES;
+    initialRecord.y /= NUM_CALIBRATION_FRAMES;
+    initialRecord.z /= NUM_CALIBRATION_FRAMES;
+    initialRecord.t = tPrev;
+
+    initRecord = initialRecord;
+    qDebug("INITIAL RECORD ADDED: %lf %lf %lf",
+           initRecord.x, initRecord.y, initRecord.z);
+}
+
+
+void PathCalculator::changeData() {
+    /* НЕ РАБОТАЕТ НОРМАЛЬНО. если ставить его, то нужно убирать
+     * cur -> substract( initRecord ); в calcData*/
+    AcceleratorRecord* rec;
+    Vector3D gravity;
+    Vector3D newRec;
+    const double alpha = 0.8;
+    int recNum = records.size();
+    gravity.setVector( initRecord );
+    for(int i=0; i<recNum; i++) {
+        rec = & (records.at(i));
+
+        gravity.x = alpha * gravity.x + (1 - alpha) * rec -> x;
+        gravity.y = alpha * gravity.y + (1 - alpha) * rec -> y;
+        gravity.z = alpha * gravity.z + (1 - alpha) * rec -> z;
+
+        rec -> x -= gravity.x;
+        rec -> y -= gravity.y;
+        rec -> z -= gravity.z;
+    }
 }
 
 void PathCalculator::calcData() {
-    wx->calcCoords(IOS,LOW_PASS_VALUE);
-    wy->calcCoords(IOS,LOW_PASS_VALUE);
-    wz->calcCoords(IOS,LOW_PASS_VALUE);
+    Vector3D point;
+    AcceleratorRecord* cur;
+    LinearMovement wx, wy, wz;
+    double ai, v, s, t, ti, dt;
+    int recNum = records.size();
+
+    t = initRecord.t;
+    for(int i=0; i<recNum; i++) {
+        cur = &( records.at(i) );
+        ti = cur -> t;
+
+        cur -> substract( initRecord );
+        cur -> deleteNoise( LOW_BORDER_VALUE );
+
+        dt = (ti - t);
+        if( !IOS ) {
+            dt /= 1000;
+        }
+
+        wx.calcNextCoord( cur -> x, dt );
+        wy.calcNextCoord( cur -> y, dt );
+        wz.calcNextCoord( cur -> z, dt );
+
+        point.setVector(wx.s, wy.s, wz.s);
+        points.push_back( point );
+
+        t = ti;
+    }
 }
 
 Vector3D PathCalculator::getPoint(int index) {
-    Vector3D p;
-    p.x = wx->getCoord(index);
-    p.y = wy->getCoord(index);
-    p.z = wz->getCoord(index);
-    return p;
+    assert( 0 <= index && index < points.size() );
+    return points.at( index );
 }
