@@ -27,6 +27,7 @@ public:
     ~PathCalculator();
     int getRecNum() { return points.size(); }
     Vector3D getPoint(int index);
+    void rotateOn(double degree);
 
 protected:
     void readData();

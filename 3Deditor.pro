@@ -16,7 +16,9 @@ SOURCES += main.cpp\
     pathCalculator.cpp \
     setting.cpp \
     server.cpp \
-    vector3d.cpp
+    vector3d.cpp \
+    proectionview.cpp \
+    proection.cpp
 
 INCLUDEPATH += $$PWD/../../../usr/local/include
 DEPENDPATH += $$PWD/../../../usr/local/include
@@ -28,6 +30,8 @@ HEADERS  += \
     PathCalculator.h \
     setting.h \
     server.h \
-    vector3d.h
+    vector3d.h \
+    proection.h \
+    proectionview.h
 
 FORMS    +=

@@ -1,4 +1,5 @@
 #include "setting.h"
+#include "proection.h"
 
 #define YES true
 #define NO false
@@ -119,6 +120,8 @@ void Setting::start(){
         qDebug()<<"POINTS NUM FROM MAIN: "<<pc->getRecNum();
         Scene3D *scene = new Scene3D(pc);
         scene->show();
+        Proection *pr= new Proection(pc);
+        pr->show();
     }
     else
     {

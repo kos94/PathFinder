@@ -1,9 +1,12 @@
 #include "vector3d.h"
 
 void Vector3D::rotate( Matrix3x3 m ) {
-    x = ( x * m.x11 + y * m.x12 + z * m.x13 );
-    y = ( x * m.x21 + y * m.x22 + z * m.x23 );
-    z = ( x * m.x31 + y * m.x32 + z * m.x33 );
+    double _x = ( x * m.x11 + y * m.x12 + z * m.x13 );
+    double _y = ( x * m.x21 + y * m.x22 + z * m.x23 );
+    double _z = ( x * m.x31 + y * m.x32 + z * m.x33 );
+    x=_x;
+    y=_y;
+    z=_z;
 }
 
 void Vector3D::setVector(Vector3D v1) {

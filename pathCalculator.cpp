@@ -4,6 +4,13 @@
 #include "PathCalculator.h"
 
 
+void PathCalculator::rotateOn(double degree)
+{
+    int pNum=getRecNum();
+    Matrix3x3 *m=new Matrix3x3(0,0,(degree*M_PI)/180);
+    for(int i=0;i<pNum;i++)
+         this->points[i].rotate(*m);
+}
 
 PathCalculator::PathCalculator(char* accelFilePath,
                                    bool ios,
@@ -18,6 +25,26 @@ PathCalculator::PathCalculator(char* accelFilePath,
     readData();
     //changeData();
     calcData();
+    int pNum=getRecNum();
+    Vector3D lastP=this->points[pNum-1];
+
+    double anB = atan(lastP.x / lastP.y);
+    double arg = lastP.z / (cos(anB) * lastP.y + sin(anB) * lastP.x);
+    double anA = atan( arg );
+ /*
+  *   double anB = atan(lastP.x / lastP.y);
+   double arg = lastP.z / (cos(anB) * lastP.y + sin(anB) * lastP.x);
+   double anA = atan( arg );
+   anA *= 180 / M_PI;
+   anB *= 180 / M_PI;
+   anZ = anB + 180;
+   anX = anA + 90;
+   */
+        Matrix3x3 *m=new Matrix3x3(0,-anA+M_PI_2,anB+M_PI_2);
+//    Matrix3x3 *m=new Matrix3x3(-anA+M_PI_2,0,anB+M_PI_2);
+
+       for(int i=0;i<pNum;i++)
+            this->points[i].rotate(*m);
 }
 
 PathCalculator::~PathCalculator() {
