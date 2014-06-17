@@ -31,7 +31,15 @@ public:
                  sa,ca*cb,-ca*sb,-sh*ca,sh*sa*cb + ch*sb,-sh*sa*sb + ch*cb);
     }
     Matrix3x3(){
-        x11=x12=x12=x21=x22=x22=x31=x32=x32=0;
+        x11=0;
+        x12=0;
+        x12=0;
+        x21=0;
+        x22=0;
+        x22=0;
+        x31=0;
+        x32=0;
+        x32=0;
     }
 
 private:void Init(double X11, double X12, double X13,

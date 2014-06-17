@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <iostream>
 #include <string.h>
 #include <assert.h>
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Eigenvalues>
 #include "PathCalculator.h"
 
 
@@ -9,14 +12,14 @@ void PathCalculator::rotateOn(double degree)
     int pNum=getRecNum();
     Matrix3x3 *m=new Matrix3x3(0,0,(degree*M_PI)/180);
     for(int i=0;i<pNum;i++)
-         this->points[i].rotate(*m);
+        this->points[i].rotate(*m);
 }
 
 PathCalculator::PathCalculator(char* accelFilePath,
-                                   bool ios,
-                                   int framesNumbers,
-                                   double lowPass,
-                                   bool gyro) {
+                               bool ios,
+                               int framesNumbers,
+                               double lowPass,
+                               bool gyro) {
     NUM_CALIBRATION_FRAMES = framesNumbers;
     IOS = ios;
     GYRO = gyro;
@@ -25,26 +28,75 @@ PathCalculator::PathCalculator(char* accelFilePath,
     readData();
     //changeData();
     calcData();
+    std::cout<<"------------------------";
+    for (int i = 0; i < getRecNum(); ++i) {
+        std::cout << this->getPoint(i).x << ", " << this->getPoint(i).y << ", " <<this->getPoint(i).z<< std::endl;
+    }
+    std::cout<<"------------------------";
+
+
+
+
+    /** --------------------------------------- */
+   // oldRotateMetod();
+    newRotateMetod();
+}
+
+void PathCalculator::newRotateMetod(){
+    using Eigen::MatrixXf;
+    using Eigen::Vector3f;
+    using Eigen::SelfAdjointEigenSolver;
+
+    int len=getRecNum();
+    Vector3f *data=new Vector3f[len];
+    for (int i = 0; i < len; ++i) {
+        Vector3D temp=this->getPoint(i);
+        data[i]<<temp.x,temp.y,temp.z;
+    }
+
+    // compute the mean of the data
+    Vector3f mean = Vector3f::Zero();
+    for(int i = 0; i < len; ++i)
+        mean += data[i];
+    mean /= len;
+
+    // compute the covariance matrix
+    MatrixXf covMat = MatrixXf::Zero(3, 3);
+    for(int i = 0; i < len; ++i)
+    {
+        Vector3f diff = (data[i] - mean).conjugate();
+        covMat += diff * diff.adjoint();
+    }
+    SelfAdjointEigenSolver<MatrixXf> eig(covMat);
+    Vector3f ei = eig.eigenvectors().col(2);
+
+
+    std::cout << "x(t) = " << mean.x() << " + " << ei.x() << " * t" << std::endl;
+    double x =mean.x()+ei.x()*20;
+    std::cout << "y(t) = " << mean.y() << " + " << ei.y() << " * t" << std::endl;
+    double y =mean.y()+ei.y()*20;
+    std::cout << "z(t) = " << mean.z() << " + " << ei.z() << " * t" << std::endl;
+    double z =mean.z()+ei.z()*20;
+
+    double anB = atan(x / y);
+    double arg = z / (cos(anB) * y + sin(anB) * x);
+    double anA = atan( arg );
+    Matrix3x3 *m=new Matrix3x3(0,-anA+M_PI_2,anB+M_PI_2);
+    for(int i=0;i<len;i++)
+        this->points[i].rotate(*m);
+}
+
+void PathCalculator::oldRotateMetod()
+{
     int pNum=getRecNum();
     Vector3D lastP=this->points[pNum-1];
 
     double anB = atan(lastP.x / lastP.y);
     double arg = lastP.z / (cos(anB) * lastP.y + sin(anB) * lastP.x);
     double anA = atan( arg );
- /*
-  *   double anB = atan(lastP.x / lastP.y);
-   double arg = lastP.z / (cos(anB) * lastP.y + sin(anB) * lastP.x);
-   double anA = atan( arg );
-   anA *= 180 / M_PI;
-   anB *= 180 / M_PI;
-   anZ = anB + 180;
-   anX = anA + 90;
-   */
-        Matrix3x3 *m=new Matrix3x3(0,-anA+M_PI_2,anB+M_PI_2);
-//    Matrix3x3 *m=new Matrix3x3(-anA+M_PI_2,0,anB+M_PI_2);
-
-       for(int i=0;i<pNum;i++)
-            this->points[i].rotate(*m);
+    Matrix3x3 *m=new Matrix3x3(0,-anA+M_PI_2,anB+M_PI_2);
+    for(int i=0;i<pNum;i++)
+        this->points[i].rotate(*m);
 }
 
 PathCalculator::~PathCalculator() {
@@ -68,8 +120,8 @@ void PathCalculator::readData() {
     while( counter <= MAX_REC_NUM ) {
         if(IOS) {
             temp = fscanf(fr, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",
-                   &rec.x, &rec.y, &rec.z, &m.x11, &m.x12, &m.x13,
-                   &m.x21, &m.x22, &m.x23, &m.x31, &m.x32, &m.x33, &rec.t);
+                          &rec.x, &rec.y, &rec.z, &m.x11, &m.x12, &m.x13,
+                          &m.x21, &m.x22, &m.x23, &m.x31, &m.x32, &m.x33, &rec.t);
         } else {
             temp = fscanf(fr, "%lf %lf %lf %lf ", &rec.x, &rec.y, &rec.z, &rec.t);
         }
@@ -146,7 +198,7 @@ void PathCalculator::calcData() {
     Vector3D point;
     AcceleratorRecord* cur;
     LinearMovement wx, wy, wz;
-    double ai, v, s, t, ti, dt;
+    double t, ti, dt;
     int recNum = records.size();
 
     t = initRecord.t;

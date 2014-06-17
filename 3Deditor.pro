@@ -34,4 +34,14 @@ HEADERS  += \
     proection.h \
     proectionview.h
 
-FORMS    +=
+QMAKE_CXXFLAGS += -std=c++11
+
+unix:!mac {
+    message("*Settings for linux")
+    INCLUDEPATH +=/usr/local/include/opencv
+
+    LIBS += -L/usr/local/lib/ \
+        -lopencv_core \
+        -lopencv_highgui \
+        -lopencv_objdetect
+}

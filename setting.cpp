@@ -118,8 +118,10 @@ void Setting::start(){
                                                lowPass->value(),
                                                gyro->isChecked());
         qDebug()<<"POINTS NUM FROM MAIN: "<<pc->getRecNum();
-        Scene3D *scene = new Scene3D(pc);
-        scene->show();
+        /** 3D View */
+        /*Scene3D *scene = new Scene3D(pc);
+        scene->show();*/
+        /** 2D View */
         Proection *pr= new Proection(pc);
         pr->show();
     }

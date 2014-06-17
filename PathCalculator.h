@@ -28,6 +28,8 @@ public:
     int getRecNum() { return points.size(); }
     Vector3D getPoint(int index);
     void rotateOn(double degree);
+    void oldRotateMetod();
+    void newRotateMetod();//Grabluk
 
 protected:
     void readData();
