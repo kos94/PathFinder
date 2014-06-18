@@ -13,6 +13,7 @@ class ProectionView : public QWidget
     double minh,minw;
     QString label="Cascade calculation turned off";
     int name_count=1;
+    QString type="-";
 public:
     explicit ProectionView(PathCalculator*,QWidget *parent = 0);
         void paintEvent(QPaintEvent*);
@@ -20,6 +21,9 @@ public:
         void RotationForRender(int frames);
         void cascadeCalc(QStringList str);
         bool isEnd(int i,int step);
+        bool isCircle();
+        void setTypeLabel(QString newtype);
+        QString getTypeLabel();
 signals:
 
 public slots:

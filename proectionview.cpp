@@ -10,6 +10,11 @@
 using namespace cv;
 using namespace std;
 
+double AngleBetweenPoints(Vector3D a,Vector3D b)
+{
+    return qAtan2(a.y-b.y,a.x-b.x)/M_PI*180;;
+}
+
 ProectionView::ProectionView(PathCalculator* pc,QWidget *parent) :
     QWidget(parent)
 {
@@ -123,11 +128,27 @@ bool ProectionView::isEnd(int i,int step){
     Vector3D pr=PC->getPoint(i-step*2);
     Vector3D tec=PC->getPoint(i-step);
     Vector3D tstep=PC->getPoint(i);
+    /*
     double an1=qAtan2(pr.y-tec.y,pr.x-tec.x)/M_PI*180;
-    double an2=qAtan2(tec.y-tstep.y,tec.x-tstep.x)/M_PI*180;
+    double an2=qAtan2(tec.y-tstep.y,tec.x-tstep.x)/M_PI*180;*/
+    double an1=AngleBetweenPoints(pr,tec);
+    double an2=AngleBetweenPoints(tec,tstep);
     if(!((an2+30>an1)&&(an2-30<an1)))
         return true;
     return false;
+}
+
+bool ProectionView::isCircle()
+{
+    int pNum=PC->getRecNum();
+    int cut=(pNum*0.9)/2;
+    for (int i = cut; i < pNum-cut; ++i) {
+        double an1=AngleBetweenPoints(PC->getPoint(i-1),PC->getPoint(i));
+        double an2=AngleBetweenPoints(PC->getPoint(i),PC->getPoint(i+1));
+        if(fabs(an1-an2)<5)
+            return false;
+    }
+    return true;
 }
 
 
@@ -169,6 +190,17 @@ void ProectionView::cascadeCalc(QStringList cascade_names){
 
     label="";
 
+    /** isCircle?*/
+    if(isCircle())
+    {
+        label+="Circle / ";
+        setTypeLabel("Circle");
+    }
+    else
+        label+="- / ";
+
+    /** Triangle or Square*/
+
     int step=5;
     int stepC=0;
     int csafa=0;
@@ -184,9 +216,11 @@ void ProectionView::cascadeCalc(QStringList cascade_names){
     switch (csafa) {
     case 2:
         label+="Triangle / ";
+        setTypeLabel("Triangle");
         break;
     case 3:
         label+="Square / ";
+        setTypeLabel("Square");
         break;
     default:
         label+="- / ";
@@ -216,22 +250,36 @@ void ProectionView::cascadeCalc(QStringList cascade_names){
     qDebug()<<"tri"<<tri<<"\n";
     qDebug()<<"sq="<<sq<<"\n";
     if(tri>=10)
+    {
         label+="Triangle";
+        setTypeLabel("Triangle");
+    }
     else if(sq>=10)
+    {
         label+="Square";
+        setTypeLabel("Square");
+    }
     else
         label+="-";
 }
 
+void ProectionView::setTypeLabel(QString newtype)
+{
+    if(type=="-")
+        type=newtype;
+}
 
-
+QString ProectionView::getTypeLabel()
+{
+    return type;
+}
 
 /** Drawing proection*/
 void ProectionView::paintEvent(QPaintEvent* e)
 {
-    double kk=300/k;
-    double kkh=300/kh;
-    double kkw=300/kw;
+    double kk=400/k;
+    double kkh=this->size().width()/kh;
+    double kkw=this->size().height()/kw;
     QPainter *paint = new QPainter (this);
     paint->begin (this);
     int count=PC->getRecNum();
@@ -257,7 +305,7 @@ void ProectionView::paintEvent(QPaintEvent* e)
     }
       paint->setPen(QColor(0,0,0));
     qDebug()<<"!!!COUNT_P = "<<csafa<<"\n";
-    paint->drawText(QRect(0,250,300,100),Qt::AlignLeft,label);
+    paint->drawText(QRect(this->size().width()-200,this->size().height()-50,200,50),Qt::AlignLeft,label);
     paint->end();
 }
 void ProectionView::renderToFile(){
