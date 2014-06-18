@@ -9,6 +9,7 @@ class ProectionView : public QWidget
     Q_OBJECT
     PathCalculator* PC;
     double k;
+    double kw,kh;
     double minh,minw;
     QString label="Cascade calculation turned off";
     int name_count=1;
@@ -18,6 +19,7 @@ public:
         void renderToFile();
         void RotationForRender(int frames);
         void cascadeCalc(QStringList str);
+        bool isEnd(int i,int step);
 signals:
 
 public slots:

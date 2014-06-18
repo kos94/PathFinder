@@ -28,18 +28,18 @@ PathCalculator::PathCalculator(char* accelFilePath,
     readData();
     //changeData();
     calcData();
-    std::cout<<"------------------------";
+   /* std::cout<<"------------------------";
     for (int i = 0; i < getRecNum(); ++i) {
         std::cout << this->getPoint(i).x << ", " << this->getPoint(i).y << ", " <<this->getPoint(i).z<< std::endl;
     }
-    std::cout<<"------------------------";
+    std::cout<<"------------------------";*/
 
 
 
 
     /** --------------------------------------- */
-   // oldRotateMetod();
-    newRotateMetod();
+    oldRotateMetod();
+   // newRotateMetod();
 }
 
 void PathCalculator::newRotateMetod(){

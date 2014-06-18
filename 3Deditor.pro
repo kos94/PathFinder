@@ -43,5 +43,11 @@ unix:!mac {
     LIBS += -L/usr/local/lib/ \
         -lopencv_core \
         -lopencv_highgui \
-        -lopencv_objdetect
+        -lopencv_objdetect \
+        -lopencv_imgproc
 }
+
+OTHER_FILES += \
+    triangle.xml \
+    circle.xml \
+    8.xml
