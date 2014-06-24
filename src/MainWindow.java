@@ -13,8 +13,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 
 /**
- * Класс, который запускает главное окно с выбором файла для распознавания.
- * Created by Berlizov on 21.06.14.
+ * Класс, который запускает главное окно с выбором файла для распознавания. Created by Berlizov on 21.06.14.
  */
 class MainWindow extends JFrame implements ActionListener {
     /**
@@ -36,7 +35,11 @@ class MainWindow extends JFrame implements ActionListener {
     /**
      * Кнопка запуска обработки.
      */
-    private JButton buttonStart;
+    private final JButton buttonStart;
+    /**
+     * Выводит проекцию траектории.
+     */
+    private final ProjectionView pv;
 
 
     private MainWindow() {
@@ -85,7 +88,7 @@ class MainWindow extends JFrame implements ActionListener {
         buttonBrowse = new JButton("Browse");
         buttonBrowse.addActionListener(this);
         add(buttonBrowse, c);
-        c.weightx = c.weighty = 1.0;
+        c.weightx = 1.0;
         c.gridx = 0;
         c.gridy = 1;
         c.gridwidth = 2;
@@ -93,8 +96,13 @@ class MainWindow extends JFrame implements ActionListener {
         buttonStart.addActionListener(this);
         buttonStart.setEnabled(false);
         add(buttonStart, c);
+        c.weightx = c.weighty = 1.0;
         c.gridx = 0;
         c.gridy = 2;
+        pv = new ProjectionView();
+        add(pv, c);
+        c.gridx = 0;
+        c.gridy = 3;
         labelType = new JLabel();
         add(labelType, c);
         setVisible(true);
@@ -119,8 +127,7 @@ class MainWindow extends JFrame implements ActionListener {
     }
 
     /**
-     * Функция которая запускает распознавание фигуры на основе данных из файла,
-     * по адрессу из textPath.
+     * Функция которая запускает распознавание фигуры на основе данных из файла, по адрессу из textPath.
      *
      * @return Возвращает название фигуры или текст ошибки.
      *
@@ -130,11 +137,11 @@ class MainWindow extends JFrame implements ActionListener {
         try {
             ArrayList<Vector4d> t = readFromFile(textPath.getText());
             ArrayList<Vector2d> tr = PathCalculator.calculateTrajectory(t);
-            for (Vector2d aTr : tr) System.out.print(aTr + "\n");
-            //todo-add recognition
-            return t.size() + "";
+            pv.addProjection(tr);
+            /*for (Vector2d aTr : tr) System.out.print(aTr + "\n");*/
+            return Recognition.recognize(tr);
         } catch (Exception e) {
-            return e.getMessage();
+            return "Error:" + e.getMessage();
         }
     }
 
@@ -154,19 +161,20 @@ class MainWindow extends JFrame implements ActionListener {
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line;
 
-            /*Считование данных из файла с проверкой количества данных в файле */
+        /*Считование данных из файла с проверкой количества данных в файле */
         while ((line = br.readLine()) != null) {
             int count = 0;//Счетчик пробелов
             int j = 0;//укозатель на последний пробел
             for (int i = 0; i < line.length(); i++)
-                if ((line.charAt(i) == ' ') || (i == line.length() - 1)) {
-                    if (count > 3)//В файле должно былть 4 параметра: x, y, z и время замера
+                if (line.charAt(i) == ' ') {
+                    if (count > 2)//В файле должно былть 4 параметра: x, y, z и время замера
                         throw new Exception("Wrong");
                     x[count] = Double.parseDouble(line.substring(j, i));
                     j = i;
                     count++;
                 }
-            al.add(new Vector4d(x[0], x[1], x[2], x[3]));
+            int t = Integer.parseInt(line.substring(line.lastIndexOf(' ') + 1));
+            al.add(new Vector4d(x[0], x[1], x[2], t));
         }
         return al;
     }

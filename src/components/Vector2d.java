@@ -7,7 +7,7 @@ public class Vector2d {
     double x;
     double y;
 
-    Vector2d() {
+    public Vector2d() {
         x = y = 0;
     }
 

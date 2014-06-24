@@ -4,19 +4,19 @@ package components;
  * Created by 350z6_000 on 23.06.14.
  */
 public class Vector4d extends Vector3d {
-    private double t;
+    private final int t;
 
     public Vector4d() {
         super();
         t = 0;
     }
 
-    public Vector4d(double X, double Y, double Z, double T) {
+    public Vector4d(double X, double Y, double Z, int T) {
         super(X, Y, Z);
         t = T;
     }
 
-    public double getT() {
+    public int getT() {
         return t;
     }
 
