@@ -36,7 +36,7 @@ abstract class PathCalculator {
         points = new ArrayList<Vector3d>();
         calcData();
         rotate();
-        //todo вписать траекторию в квадрат
+        fitIntoSquare();
         ArrayList<Vector2d> p = new ArrayList<Vector2d>();
         for (Vector3d point : points) p.add(point);
         return p;
@@ -78,8 +78,6 @@ abstract class PathCalculator {
             cur = record;
             ti = cur.getT();
             cur.subtract(initialRecord);//Отнимаем калибровочное ускорение
-           /* cur.deleteNoise( LOW_BORDER_VALUE );*/
-            //todo попробавать написать вильтр для шумов
             dt = (ti - t);
             wx.calcNextCoord(cur.getX(), dt);
             wy.calcNextCoord(cur.getY(), dt);
@@ -101,5 +99,30 @@ abstract class PathCalculator {
         double anA = Math.atan(arg);
         Matrix3x3 m = new Matrix3x3(0, -anA + Math.PI / 2, anB + Math.PI / 2);
         for (Vector3d point : points) point.rotate(m);
+    }
+
+    /**
+     * Функция вписывает проекция в квадрат(100x100), растягивая ее по ширине или высоте, если это необходимо.
+     */
+    private static void fitIntoSquare() {
+        double maxh = points.get(0).getX();
+        double minh = points.get(0).getX();
+        double maxw = points.get(0).getY();
+        double minw = points.get(0).getY();
+        for (Vector3d aProjection : points) {
+            if (aProjection.getX() > maxh)
+                maxh = aProjection.getX();
+            if (aProjection.getX() < minh)
+                minh = aProjection.getX();
+            if (aProjection.getY() > maxw)
+                maxw = aProjection.getY();
+            if (aProjection.getY() < minw)
+                minw = aProjection.getY();
+        }
+        double kkh = 100 / (maxh - minh);
+        double kkw = 100 / (maxw - minw);
+        for (int i = 0; i < points.size(); i++) {
+            points.set(i, new Vector3d((points.get(i).getX() - minh) * kkh, (points.get(i).getY() - minw) * kkw, points.get(i).getZ()));
+        }
     }
 }

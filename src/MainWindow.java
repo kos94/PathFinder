@@ -1,4 +1,3 @@
-import components.Vector2d;
 import components.Vector4d;
 
 import javax.swing.*;
@@ -103,6 +102,7 @@ class MainWindow extends JFrame implements ActionListener {
         add(pv, c);
         c.gridx = 0;
         c.gridy = 3;
+        c.weighty = 0.0;
         labelType = new JLabel();
         add(labelType, c);
         setVisible(true);
@@ -117,9 +117,12 @@ class MainWindow extends JFrame implements ActionListener {
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(buttonStart))/*Запуск главной функции для обработки*/
+        if (e.getSource().equals(buttonStart))/*Запуск главной функции для обработки*/ {
+            long start = System.nanoTime();
             labelType.setText(start());
-        else if (e.getSource().equals(buttonBrowse))/*Откритие файлового диалога при нажатии на кнопку Browse*/ {
+            long end = System.nanoTime();
+            System.out.print((end - start) / 1000000.0 + " ms\n");//замеряю время выполнения
+        } else if (e.getSource().equals(buttonBrowse))/*Откритие файлового диалога при нажатии на кнопку Browse*/ {
             if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 textPath.setText(fc.getSelectedFile().getPath());
             }
@@ -135,11 +138,10 @@ class MainWindow extends JFrame implements ActionListener {
      */
     String start() {
         try {
-            ArrayList<Vector4d> t = readFromFile(textPath.getText());
-            ArrayList<Vector2d> tr = PathCalculator.calculateTrajectory(t);
-            pv.addProjection(tr);
+            // ArrayList<Vector4d> t = readFromFile(textPath.getText());
+            // ArrayList<Vector2d> tr = PathCalculator.calculateTrajectory(t);
             /*for (Vector2d aTr : tr) System.out.print(aTr + "\n");*/
-            return Recognition.recognize(tr);
+            return Recognition.recognize(PathCalculator.calculateTrajectory(readFromFile(textPath.getText())), pv);
         } catch (Exception e) {
             return "Error:" + e.getMessage();
         }

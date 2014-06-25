@@ -4,9 +4,9 @@ package components;
  * Created by 350z6_000 on 23.06.2014.
  */
 public class LinearMovement {
-    private double v;
-    private double s;
-    private double a;
+    protected double v;
+    protected double s;
+    protected double a;
 
     public LinearMovement() {
         v = s = a = 0;

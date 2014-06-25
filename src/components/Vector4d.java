@@ -4,7 +4,7 @@ package components;
  * Created by 350z6_000 on 23.06.14.
  */
 public class Vector4d extends Vector3d {
-    private final int t;
+    protected final int t;
 
     public Vector4d() {
         super();

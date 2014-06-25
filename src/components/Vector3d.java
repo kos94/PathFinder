@@ -5,7 +5,7 @@ package components;
  * Created by 350z6_000 on 23.06.14.
  */
 public class Vector3d extends Vector2d {
-    private double z;
+    protected double z;
 
     public Vector3d() {
         super();
