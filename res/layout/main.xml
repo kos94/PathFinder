@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+    <TextView
+        android:id="@+id/own_cast_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:textSize="40sp"
+        android:textColor="#00ff00"/>
+    <TextView
+        android:id="@+id/record_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:textSize="20sp"
+        android:text=""/>
+    <view android:layout_width="300dp"
+          android:layout_height="300dp"
+          class="com.example.wizard1.ProjectionView" android:id="@+id/pv"/>
+</LinearLayout>
